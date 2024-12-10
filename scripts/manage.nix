@@ -163,9 +163,49 @@ EOL
     # Update React app's package.json to include shared dependency
     cd "$SITE_PATH/react-app"
     npm pkg set dependencies."@$SITE_NAME/shared"="file:../shared"
+    npm install
+    npm install -D tailwindcss postcss autoprefixer
+
+    # Initialize Tailwind CSS (creates tailwind.config.js)
+    echo "Initializing Tailwind CSS..."
+    npx tailwindcss init
+
+    # Create PostCSS config file
+    echo "Creating PostCSS configuration..."
+    cat > postcss.config.js << EOL
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  }
+}
+EOL
+
+    # Configure Tailwind CSS with proper template paths
+    cat > tailwind.config.js << EOL
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+EOL
+
+    # Create CSS file with Tailwind directives
+    echo "Adding Tailwind directives to CSS..."
+    cat > src/index.css << 'EOL'
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+EOL
 
     # Remove unnecessary files and directories
-    rm -rf public/vite.svg src/assets src/App.css src/index.css
+    rm -rf public/vite.svg src/assets src/App.css .gitignore README.md
 
     # Update index.html to remove Vite references
     cat > index.html << 'EOL'
@@ -174,7 +214,7 @@ EOL
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Site</title>
+    <title>SITE_NAME</title>
   </head>
   <body>
     <div id="root"></div>
@@ -182,15 +222,20 @@ EOL
   </body>
 </html>
 EOL
+    # Replace the placeholder with the actual site name
+    sed -i "s/SITE_NAME/$SITE_NAME/g" "index.html"
 
-    # Create minimal App.tsx
+    # Create App.tsx with Tailwind classes
     cat > src/App.tsx << 'EOL'
-import { User } from '@SITE_NAME/shared';
+//import { User } from '@SITE_NAME/shared';
 
 function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <h1 className="text-3xl font-bold">Hello World</h1>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-900">Welcome to SITE_NAME</h1>
+        <p className="mt-4 text-lg text-gray-600">Start building!</p>
+      </div>
     </div>
   );
 }
@@ -205,6 +250,7 @@ EOL
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
+import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
