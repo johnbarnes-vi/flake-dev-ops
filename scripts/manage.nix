@@ -80,24 +80,12 @@ export interface User {
 }
 EOL
 
-    cat > "$SITE_PATH/shared/src/types/product.types.ts" << EOL
-export interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
-EOL
-
     cat > "$SITE_PATH/shared/src/index.ts" << EOL
 /**
  * Shared Resource Export Configuration
  * Bundles all shared resources for both frontend and backend
  */
 export * from './types/user.types';
-export * from './types/product.types';
 EOL
 
     # Initialize server
@@ -175,6 +163,89 @@ EOL
     # Update React app's package.json to include shared dependency
     cd "$SITE_PATH/react-app"
     npm pkg set dependencies."@$SITE_NAME/shared"="file:../shared"
+
+    # Remove unnecessary files and directories
+    rm -rf public/vite.svg src/assets src/App.css src/index.css
+
+    # Update index.html to remove Vite references
+    cat > index.html << 'EOL'
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Site</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+EOL
+
+    # Create minimal App.tsx
+    cat > src/App.tsx << 'EOL'
+import { User } from '@SITE_NAME/shared';
+
+function App() {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <h1 className="text-3xl font-bold">Hello World</h1>
+    </div>
+  );
+}
+
+export default App;
+EOL
+    # Replace the placeholder with the actual site name
+    sed -i "s/SITE_NAME/$SITE_NAME/g" "src/App.tsx"
+
+    # Create minimal main.tsx
+    cat > src/main.tsx << 'EOL'
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import App from './App.tsx'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+EOL
+    # Update tsconfig.app.json to include shared module
+    cat > tsconfig.app.json << 'EOL'
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+
+    /* Shared Module Path */
+    "paths": {
+      "@SITE_NAME/shared": ["../shared/src"]
+    }
+  },
+  "include": ["src"]
+}
+EOL
 
     # Go back to root
     cd ../../../

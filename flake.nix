@@ -27,8 +27,6 @@
           # Node.js and core tools
           nodejs_20
           nodePackages.npm
-          nodePackages.typescript-language-server
-          nodePackages.ts-node
           nodePackages.nodemon
         ];
 
