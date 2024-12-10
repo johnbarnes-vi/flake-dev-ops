@@ -44,7 +44,7 @@ pkgs.writeScriptBin "manage" ''
     "watch": "tsc -w"
   },
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "~5.6.2"
   }
 }
 EOL
@@ -122,7 +122,7 @@ EOL
     "@types/node": "^20.10.0",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.3.2"
+    "typescript": "~5.6.2"
   }
 }
 EOL
