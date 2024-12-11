@@ -122,17 +122,14 @@ EOL
     "target": "es2016",
     "module": "commonjs",
     "outDir": "./dist",
-    "rootDir": "../",
+    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "paths": {
-      "@$SITE_NAME/shared": ["../shared/src"]
-    }
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules"]
 }
 EOL
 
@@ -270,7 +267,7 @@ EOL
     "skipLibCheck": true,
 
     /* Bundler mode */
-    "moduleResolution": "bundler",
+    "moduleResolution": "Node",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
@@ -282,17 +279,38 @@ EOL
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-
-    /* Shared Module Path */
-    "paths": {
-      "@SITE_NAME/shared": ["../shared/src"]
-    }
+    "noUncheckedSideEffectImports": true
   },
   "include": ["src"]
 }
 EOL
+    # Update tsconfig.node.json to include shared module
+    cat > tsconfig.node.json << 'EOL'
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "skipLibCheck": true,
 
+    /* Bundler mode */
+    "moduleResolution": "Node",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+EOL
     # Go back to root
     cd ../../../
     
@@ -325,8 +343,9 @@ RUN cd shared && npm run build
 RUN cd server && npm run build
 
 EXPOSE 5000
-#FIXME: Find correct path for index.js build entry
-CMD ["node", "server/dist/server/src/index.js"]
+
+# Start server
+CMD ["node", "server/dist/index.js"]
 EOL
 
     # Frontend Dockerfile
