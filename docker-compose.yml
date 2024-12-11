@@ -1,0 +1,40 @@
+version: '3.8'
+volumes:
+  uploads:
+services:
+  nginx-proxy:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - uploads:/var/www/uploads
+    depends_on: # Sites will be added here dynamically
+      - myflashpal-frontend
+      - lonestarstatuary-frontend
+  myflashpal-frontend:
+    build:
+      context: ./sites/myflashpal
+      dockerfile: ../../docker/myflashpal/react-app.Dockerfile
+    depends_on:
+      - myflashpal-backend
+  myflashpal-backend:
+    build:
+      context: ./sites/myflashpal
+      dockerfile: ../../docker/myflashpal/server.Dockerfile
+    environment:
+      - DOCKER_ENV=true
+  lonestarstatuary-frontend:
+    build:
+      context: ./sites/lonestarstatuary
+      dockerfile: ../../docker/lonestarstatuary/react-app.Dockerfile
+    depends_on:
+      - lonestarstatuary-backend
+  lonestarstatuary-backend:
+    build:
+      context: ./sites/lonestarstatuary
+      dockerfile: ../../docker/lonestarstatuary/server.Dockerfile
+    environment:
+      - DOCKER_ENV=true
