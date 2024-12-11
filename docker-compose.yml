@@ -26,6 +26,8 @@ services:
       dockerfile: ../../docker/myflashpal/server.Dockerfile
     environment:
       - DOCKER_ENV=true
+    env_file:
+      - ./sites/myflashpal/server/.env      
   lonestarstatuary-frontend:
     build:
       context: ./sites/lonestarstatuary
