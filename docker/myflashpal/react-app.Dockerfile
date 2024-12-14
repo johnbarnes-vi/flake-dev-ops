@@ -22,4 +22,5 @@ RUN cd react-app && npm run build
 
 FROM nginx:alpine
 COPY --from=build /app/react-app/dist /usr/share/nginx/html
+COPY react-app/nginx.conf /etc/nginx/conf.d/default.conf
 CMD ["nginx", "-g", "daemon off;"]

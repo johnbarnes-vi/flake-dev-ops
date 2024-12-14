@@ -167,6 +167,27 @@ EOL
     echo "Initializing Tailwind CSS..."
     npx tailwindcss init
 
+    # Create nginx static server config file
+    echo "Creating PostCSS configuration..."
+    cat > nginx.conf << EOL
+# Frontend nginx configuration serves the static files
+server {
+    listen 80;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Handle all routes for SPA
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Optional: Add security headers
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+}
+EOL
+
     # Create PostCSS config file
     echo "Creating PostCSS configuration..."
     cat > postcss.config.js << EOL
@@ -374,6 +395,7 @@ RUN cd react-app && npm run build
 
 FROM nginx:alpine
 COPY --from=build /app/react-app/dist /usr/share/nginx/html
+COPY react-app/nginx.conf /etc/nginx/conf.d/default.conf
 CMD ["nginx", "-g", "daemon off;"]
 EOL
 
