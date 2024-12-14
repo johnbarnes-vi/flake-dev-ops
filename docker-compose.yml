@@ -13,7 +13,6 @@ services:
       - uploads:/var/www/uploads
     depends_on: # Sites will be added here dynamically
       - myflashpal-frontend
-      - lonestarstatuary-frontend
   myflashpal-frontend:
     build:
       context: ./sites/myflashpal
@@ -27,16 +26,4 @@ services:
     environment:
       - DOCKER_ENV=true
     env_file:
-      - ./sites/myflashpal/server/.env      
-  lonestarstatuary-frontend:
-    build:
-      context: ./sites/lonestarstatuary
-      dockerfile: ../../docker/lonestarstatuary/react-app.Dockerfile
-    depends_on:
-      - lonestarstatuary-backend
-  lonestarstatuary-backend:
-    build:
-      context: ./sites/lonestarstatuary
-      dockerfile: ../../docker/lonestarstatuary/server.Dockerfile
-    environment:
-      - DOCKER_ENV=true
+      - ./sites/myflashpal/server/.env
