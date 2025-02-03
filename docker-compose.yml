@@ -14,6 +14,7 @@ services:
       - uploads:/var/www/uploads
     depends_on: # Sites will be added here dynamically
       - myflashpal-frontend
+      - prerender
   prerender:
     build:
       context: ./docker/prerender
