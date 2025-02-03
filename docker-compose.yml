@@ -1,6 +1,7 @@
 version: '3.8'
 volumes:
   uploads:
+  prerender_cache:
 services:
   nginx-proxy:
     image: nginx:alpine
@@ -19,7 +20,10 @@ services:
     ports:
       - "3000:3000"
     environment:
-      CACHE_TTL: "3600" # 1 hour cache      
+      CACHE_TTL: "3600" # 1 hour cache
+      CACHE_PATH: "/cache/storage.json"
+    volumes:
+      - prerender_cache:/cache
   myflashpal-frontend:
     build:
       context: ./sites/myflashpal

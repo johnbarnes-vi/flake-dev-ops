@@ -22,7 +22,7 @@ app.get('/render', (req: Request, res: Response) => {
     (async () => {
         try {
             // Check cache first
-            const cached = cache.get(url);
+            const cached = await cache.get(url);
             if (cached) {
                 res.send(cached);
                 return;
