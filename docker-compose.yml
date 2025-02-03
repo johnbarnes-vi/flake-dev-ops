@@ -13,6 +13,13 @@ services:
       - uploads:/var/www/uploads
     depends_on: # Sites will be added here dynamically
       - myflashpal-frontend
+      - prerender
+  prerender:
+    build: ./docker/prerender
+    ports:
+      - "3000:3000"
+    environment:
+      CACHE_TTL: "3600" # 1 hour cache      
   myflashpal-frontend:
     build:
       context: ./sites/myflashpal
