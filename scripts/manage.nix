@@ -509,8 +509,9 @@ EOL
       
     "stop-prod")
       check_site
-      echo "Stopping production services..."
-      ${pkgs.docker-compose}/bin/docker-compose down
+      echo "Stopping services for $SITE_NAME..."
+      ${pkgs.docker-compose}/bin/docker-compose stop "$SITE_NAME-frontend" "$SITE_NAME-backend"
+      ${pkgs.docker-compose}/bin/docker-compose rm -f "$SITE_NAME-frontend" "$SITE_NAME-backend"
       ;;
       
     "start-dev")
