@@ -13,14 +13,27 @@ export class Renderer {
     async render(url: string): Promise<string> {
         if (!this.browser) await this.initialize();
         const page = await this.browser!.newPage();
+        
         try {
+            // Block unnecessary resources
+            await page.setRequestInterception(true);
+            page.on('request', (req) => {
+                if (['image', 'stylesheet', 'font'].includes(req.resourceType())) {
+                    req.abort();
+                } else {
+                    req.continue();
+                }
+            });
+    
             await page.goto(url, {
                 waitUntil: 'networkidle0',
-                timeout: 10000
+                timeout: 60000
             });
+            
             return await page.content();
         } finally {
             await page.close();
+            // Keep browser instance open for reuse
         }
     }
 }
