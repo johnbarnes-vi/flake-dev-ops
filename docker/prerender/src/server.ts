@@ -1,4 +1,3 @@
-// docker/prerender/src/server.ts
 import express, { Request, Response } from 'express';
 import { CacheManager } from './cache';
 import { Renderer } from './renderer';
@@ -7,61 +6,69 @@ const app = express();
 const cache = new CacheManager();
 const renderer = new Renderer();
 
-// Set up periodic cache refresh
-const REFRESH_INTERVAL = 12 * 60 * 60 * 1000; // 12 hours
-setInterval(() => {
-    cache.refreshCache(renderer)
-        .catch(error => console.error('Scheduled refresh failed:', error));
-}, REFRESH_INTERVAL);
+// Cache refresh interval (12 hours)
+const REFRESH_INTERVAL = 12 * 60 * 60 * 1000;
 
-// Health check endpoint that can trigger refresh if needed
-app.get('/health', (_req: Request, res: Response) => {
-    cache.refreshCache(renderer)
-        .catch(error => {
-            console.error('Health check refresh failed:', error);
-        })
-        .finally(() => {
-            res.send('healthy');
-        });
+async function handleCacheRefresh() {
+    try {
+        await cache.refreshCache(renderer);
+    } catch (error) {
+        console.error('Cache refresh failed:', error);
+    }
+}
+
+// Schedule periodic cache refresh
+setInterval(handleCacheRefresh, REFRESH_INTERVAL);
+
+// Health check with optional cache refresh
+app.get('/health', async (_req: Request, res: Response): Promise<void> => {
+    try {
+        await handleCacheRefresh();
+        res.status(200).send('healthy');
+    } catch (error) {
+        res.status(500).send('unhealthy');
+    }
 });
 
-// Render endpoint
-app.get('/render', (req: Request, res: Response) => {
+app.get('/render', async (req: Request, res: Response): Promise<void> => {
     const url = req.query.url as string;
     if (!url) {
-        res.status(400).send('URL required');
+        res.status(400).json({ error: 'URL parameter required' });
         return;
     }
 
-    (async () => {
-        try {
-            // Always return cached content if it exists
-            const cached = await cache.get(url);
-            if (cached) {
-                // Check if content needs refresh
-                const needsRefresh = await cache.needsRefresh(url);
-                if (needsRefresh) {
-                    // Trigger refresh in the background
-                    cache.refreshUrl(url, renderer)
-                        .catch(error => {
-                            console.error(`Background refresh failed for ${url}:`, error);
-                        });
-                }
-                // Return cached content immediately
-                res.send(cached);
-                return;
+    try {
+        const cached = await cache.get(url);
+        if (cached) {
+            if (await cache.needsRefresh(url)) {
+                renderer.render(url)
+                    .then(content => cache.set(url, content))
+                    .catch(error => console.error(`Background refresh failed for ${url}:`, error));
             }
-
-            // If no cache exists, render and cache
-            const content = await renderer.render(url);
-            await cache.set(url, content);
-            res.send(content);
-        } catch (error) {
-            console.error('Render error:', error);
-            res.status(500).send('Render failed');
+            res.send(cached);
+            return;
         }
-    })();
+
+        const content = await renderer.render(url);
+        await cache.set(url, content);
+        res.send(content);
+    } catch (error) {
+        console.error('Render error:', error);
+        res.status(500).json({ error: 'Render failed' });
+    }
 });
+
+// Force refresh endpoint for debugging
+if (process.env.NODE_ENV === 'development') {
+    app.post('/refresh', async (_req: Request, res: Response) => {
+        try {
+            await handleCacheRefresh();
+            res.status(200).json({ message: 'Cache refresh completed' });
+        } catch (error) {
+            res.status(500).json({ error: 'Cache refresh failed' });
+        }
+    });
+}
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Prerender service running on port ${port}`));
