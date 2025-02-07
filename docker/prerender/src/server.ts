@@ -17,6 +17,11 @@ async function handleCacheRefresh() {
     }
 }
 
+// Initial refresh when server starts
+handleCacheRefresh().catch(error => {
+    console.error('Initial cache refresh failed:', error);
+});
+
 // Schedule periodic cache refresh
 setInterval(handleCacheRefresh, REFRESH_INTERVAL);
 
