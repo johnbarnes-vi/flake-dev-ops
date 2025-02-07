@@ -10,6 +10,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx:/etc/nginx/conf.d
+      - ./nginx/static:/var/www/static
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - uploads:/var/www/uploads
     depends_on: # Sites will be added here dynamically

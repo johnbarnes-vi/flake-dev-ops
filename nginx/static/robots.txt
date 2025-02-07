@@ -1,0 +1,14 @@
+# Allow all crawlers access to most content
+User-agent: *
+Allow: /
+Allow: /browse
+Allow: /deck/
+Allow: /api/sitemap.xml
+
+# Disallow access to specific routes
+Disallow: /settings
+Disallow: /product
+Disallow: /processing
+
+# Add sitemap location
+Sitemap: https://myflashpal.com/api/sitemap.xml

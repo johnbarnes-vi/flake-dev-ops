@@ -144,7 +144,7 @@ export class CacheManager {
   private async fetchSitemap(): Promise<string[]> {
     try {
       // Force HTTPS for sitemap retrieval
-      const response = await fetch('http://myflashpal-backend:5000/sitemap.xml');
+      const response = await fetch('http://myflashpal-backend:5000/api/sitemap.xml');
       const xml = await response.text();
       const result = this.parser.parse(xml);
 
