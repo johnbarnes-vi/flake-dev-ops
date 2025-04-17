@@ -16,6 +16,7 @@ services:
     depends_on: # Sites will be added here dynamically
       - myflashpal-frontend
       - prerender
+      - johnbarnes-vi-frontend
   prerender:
     build: ./docker/prerender
     ports:
@@ -48,3 +49,17 @@ services:
       timeout: 3s
       retries: 5
       start_period: 10s
+  johnbarnes-vi-frontend:
+    build:
+      context: ./sites/johnbarnes-vi
+      dockerfile: ../../docker/johnbarnes-vi/react-app.Dockerfile
+    depends_on:
+      - johnbarnes-vi-backend
+  johnbarnes-vi-backend:
+    build:
+      context: ./sites/johnbarnes-vi
+      dockerfile: ../../docker/johnbarnes-vi/server.Dockerfile
+    environment:
+      - DOCKER_ENV=true
+    env_file:
+      - ./sites/johnbarnes-vi/server/.env
